@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { DevicesActions } from '../../store/devices/devices.actions';
 import { selectAllDevices, selectDevicesLoading } from '../../store/devices/devices.state';
@@ -56,6 +57,9 @@ const ROW = 'border-b border-wa-light-border/50 dark:border-wa-dark-border/50 ho
                 }
               </div>
               <div class="flex items-center gap-1 shrink-0">
+                <button (click)="viewMetrics(device)" class="p-1.5 rounded hover:bg-wa-light-bg dark:hover:bg-wa-dark-border text-wa-light-muted hover:text-wa-teal transition-colors" title="Métricas">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                </button>
                 <button (click)="deviceToReboot.set(device)" class="p-1.5 rounded hover:bg-amber-50 dark:hover:bg-amber-500/10 text-wa-light-muted hover:text-amber-500 transition-colors">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M21.015 4.356v4.992"/></svg>
                 </button>
@@ -121,6 +125,9 @@ const ROW = 'border-b border-wa-light-border/50 dark:border-wa-dark-border/50 ho
                   <td class="${TD} text-xs text-wa-light-muted dark:text-wa-dark-muted">{{ device.last_seen ? (device.last_seen | date:'short') : 'Nunca' }}</td>
                   <td class="${TD} text-right">
                     <div class="flex items-center justify-end gap-1">
+                      <button (click)="viewMetrics(device)" class="p-1 rounded hover:bg-wa-light-bg dark:hover:bg-wa-dark-border text-wa-light-muted hover:text-wa-teal transition-colors" title="Métricas">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+                      </button>
                       <button (click)="deviceToReboot.set(device)" class="p-1 rounded hover:bg-amber-50 dark:hover:bg-amber-500/10 text-wa-light-muted hover:text-amber-500 transition-colors" title="Reiniciar">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M21.015 4.356v4.992"/></svg>
                       </button>
@@ -330,6 +337,7 @@ const ROW = 'border-b border-wa-light-border/50 dark:border-wa-dark-border/50 ho
 export class DevicesComponent implements OnInit {
   private store = inject(Store);
   private api = inject(ApiService);
+  private router = inject(Router);
 
   allDevices = this.store.selectSignal(selectAllDevices);
   loading = this.store.selectSignal(selectDevicesLoading);
@@ -457,6 +465,10 @@ export class DevicesComponent implements OnInit {
       },
       error: () => this.deviceToDelete.set(null),
     });
+  }
+
+  viewMetrics(device: Device): void {
+    this.router.navigate(['/devices', device.id]);
   }
 
   // ── Display helpers ───────────────────────────────────────────────────────
