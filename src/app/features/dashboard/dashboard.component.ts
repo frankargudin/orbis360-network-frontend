@@ -12,9 +12,9 @@ import { selectAllIncidents } from '../../store/incidents/incidents.state';
   template: `
     <div class="p-4 md:p-6 max-w-7xl mx-auto space-y-4">
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="rounded-xl p-4 bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border">
-          <p class="text-3xl font-bold text-wa-light-text dark:text-wa-dark-text">{{ summary()?.total ?? 0 }}</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+        <div class="rounded-xl p-3 md:p-4 bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border">
+          <p class="text-2xl md:text-3xl font-bold text-wa-light-text dark:text-wa-dark-text">{{ summary()?.total ?? 0 }}</p>
           <p class="text-xs font-medium text-wa-light-muted dark:text-wa-dark-muted mt-1">Total Dispositivos</p>
         </div>
         <div class="rounded-xl p-4 bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border">

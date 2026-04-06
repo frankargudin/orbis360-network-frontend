@@ -22,12 +22,12 @@ const ROW = 'border-b border-wa-light-border/50 dark:border-wa-dark-border/50 ho
     <div class="p-4 md:p-6 max-w-7xl mx-auto space-y-4">
 
       <!-- Header -->
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold text-wa-light-text dark:text-wa-dark-text">Dispositivos de Red</h2>
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-lg md:text-xl font-bold text-wa-light-text dark:text-wa-dark-text">Dispositivos de Red</h2>
         <button (click)="openAdd()"
-                class="px-3 py-1.5 rounded-lg bg-wa-teal text-white text-sm font-medium hover:bg-wa-teal-dark transition-colors flex items-center gap-1.5">
+                class="px-2.5 md:px-3 py-1.5 rounded-lg bg-wa-teal text-white text-xs md:text-sm font-medium hover:bg-wa-teal-dark transition-colors flex items-center gap-1 shrink-0">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-          Agregar Dispositivo
+          <span class="hidden sm:inline">Agregar</span> Dispositivo
         </button>
       </div>
 
@@ -43,8 +43,45 @@ const ROW = 'border-b border-wa-light-border/50 dark:border-wa-dark-border/50 ho
         }
       </div>
 
-      <!-- Tabla -->
-      <div class="rounded-xl bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border overflow-hidden">
+      <!-- Mobile: Cards -->
+      <div class="md:hidden space-y-2">
+        @for (device of filteredDevices(); track device.id) {
+          <div class="rounded-xl bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border p-3">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" [class]="dotClass(device.status)"></span>
+                <span class="text-sm font-semibold text-wa-light-text dark:text-wa-dark-text truncate">{{ device.hostname }}</span>
+                @if (device.is_critical) {
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 shrink-0">CRIT</span>
+                }
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button (click)="deviceToReboot.set(device)" class="p-1.5 rounded hover:bg-amber-50 dark:hover:bg-amber-500/10 text-wa-light-muted hover:text-amber-500 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M21.015 4.356v4.992"/></svg>
+                </button>
+                <button (click)="openEdit(device)" class="p-1.5 rounded hover:bg-wa-light-bg dark:hover:bg-wa-dark-border text-wa-light-muted hover:text-wa-teal transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                </button>
+                <button (click)="deviceToDelete.set(device)" class="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-500/10 text-wa-light-muted hover:text-red-500 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+              <div><span class="text-wa-light-muted dark:text-wa-dark-muted">IP:</span> <span class="font-mono text-wa-light-text dark:text-wa-dark-text">{{ device.ip_address }}</span></div>
+              <div><span class="text-wa-light-muted dark:text-wa-dark-muted">Tipo:</span> <span class="text-wa-light-text dark:text-wa-dark-text">{{ typeLabel(device.device_type) }}</span></div>
+              <div><span class="text-wa-light-muted dark:text-wa-dark-muted">Fabricante:</span> <span class="text-wa-light-text dark:text-wa-dark-text">{{ device.vendor || '-' }}</span></div>
+              <div><span class="text-wa-light-muted dark:text-wa-dark-muted">Estado:</span> <span class="font-semibold uppercase" [class]="textClass(device.status)">{{ statusLabel(device.status) }}</span></div>
+            </div>
+          </div>
+        }
+        @if (filteredDevices().length === 0) {
+          <div class="text-center py-8 text-sm text-wa-light-muted dark:text-wa-dark-muted">No se encontraron dispositivos</div>
+        }
+      </div>
+
+      <!-- Desktop: Table -->
+      <div class="hidden md:block rounded-xl bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead>
@@ -84,26 +121,14 @@ const ROW = 'border-b border-wa-light-border/50 dark:border-wa-dark-border/50 ho
                   <td class="${TD} text-xs text-wa-light-muted dark:text-wa-dark-muted">{{ device.last_seen ? (device.last_seen | date:'short') : 'Nunca' }}</td>
                   <td class="${TD} text-right">
                     <div class="flex items-center justify-end gap-1">
-                      <!-- Reiniciar -->
-                      <button (click)="deviceToReboot.set(device)"
-                              class="p-1 rounded hover:bg-amber-50 dark:hover:bg-amber-500/10 text-wa-light-muted hover:text-amber-500 dark:hover:text-amber-400 transition-colors" title="Reiniciar">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M21.015 4.356v4.992"/>
-                        </svg>
+                      <button (click)="deviceToReboot.set(device)" class="p-1 rounded hover:bg-amber-50 dark:hover:bg-amber-500/10 text-wa-light-muted hover:text-amber-500 transition-colors" title="Reiniciar">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M21.015 4.356v4.992"/></svg>
                       </button>
-                      <!-- Editar -->
-                      <button (click)="openEdit(device)"
-                              class="p-1 rounded hover:bg-wa-light-bg dark:hover:bg-wa-dark-border text-wa-light-muted hover:text-wa-teal transition-colors" title="Editar">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
-                        </svg>
+                      <button (click)="openEdit(device)" class="p-1 rounded hover:bg-wa-light-bg dark:hover:bg-wa-dark-border text-wa-light-muted hover:text-wa-teal transition-colors" title="Editar">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
                       </button>
-                      <!-- Eliminar -->
-                      <button (click)="deviceToDelete.set(device)"
-                              class="p-1 rounded hover:bg-red-50 dark:hover:bg-red-500/10 text-wa-light-muted hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Eliminar">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
-                        </svg>
+                      <button (click)="deviceToDelete.set(device)" class="p-1 rounded hover:bg-red-50 dark:hover:bg-red-500/10 text-wa-light-muted hover:text-red-500 transition-colors" title="Eliminar">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
                       </button>
                     </div>
                   </td>
@@ -120,7 +145,7 @@ const ROW = 'border-b border-wa-light-border/50 dark:border-wa-dark-border/50 ho
       <!-- ═══════ DIÁLOGO AGREGAR / EDITAR ═══════ -->
       @if (dialogMode()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="closeDialog()">
-          <div class="w-full max-w-lg bg-wa-light-surface dark:bg-wa-dark-surface rounded-xl shadow-xl border border-wa-light-border dark:border-wa-dark-border p-6" (click)="$event.stopPropagation()">
+          <div class="w-full max-w-lg mx-4 bg-wa-light-surface dark:bg-wa-dark-surface rounded-xl shadow-xl border border-wa-light-border dark:border-wa-dark-border p-6" (click)="$event.stopPropagation()">
             <h3 class="text-base font-semibold text-wa-light-text dark:text-wa-dark-text mb-4">
               {{ dialogMode() === 'add' ? 'Agregar Nuevo Dispositivo' : 'Editar Dispositivo' }}
             </h3>
@@ -228,7 +253,7 @@ const ROW = 'border-b border-wa-light-border/50 dark:border-wa-dark-border/50 ho
       <!-- ═══════ DIÁLOGO ELIMINAR ═══════ -->
       @if (deviceToDelete()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="deviceToDelete.set(null)">
-          <div class="w-full max-w-sm bg-wa-light-surface dark:bg-wa-dark-surface rounded-xl shadow-xl border border-wa-light-border dark:border-wa-dark-border p-6" (click)="$event.stopPropagation()">
+          <div class="w-full max-w-sm mx-4 bg-wa-light-surface dark:bg-wa-dark-surface rounded-xl shadow-xl border border-wa-light-border dark:border-wa-dark-border p-6" (click)="$event.stopPropagation()">
             <h3 class="text-base font-semibold text-wa-light-text dark:text-wa-dark-text mb-2">Eliminar Dispositivo</h3>
             <p class="text-sm text-wa-light-muted dark:text-wa-dark-muted mb-4">
               ¿Estás seguro de que deseas eliminar <strong class="text-wa-light-text dark:text-wa-dark-text">{{ deviceToDelete()!.hostname }}</strong> ({{ deviceToDelete()!.ip_address }})? Se eliminarán también todos sus enlaces. Esta acción no se puede deshacer.
@@ -246,7 +271,7 @@ const ROW = 'border-b border-wa-light-border/50 dark:border-wa-dark-border/50 ho
       <!-- ═══════ DIÁLOGO REINICIAR ═══════ -->
       @if (deviceToReboot()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" (click)="deviceToReboot.set(null)">
-          <div class="w-full max-w-md bg-wa-light-surface dark:bg-wa-dark-surface rounded-xl shadow-xl border border-wa-light-border dark:border-wa-dark-border p-6" (click)="$event.stopPropagation()">
+          <div class="w-full max-w-md mx-4 bg-wa-light-surface dark:bg-wa-dark-surface rounded-xl shadow-xl border border-wa-light-border dark:border-wa-dark-border p-6" (click)="$event.stopPropagation()">
             <div class="flex items-start gap-3 mb-4">
               <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
