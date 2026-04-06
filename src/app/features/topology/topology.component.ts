@@ -14,49 +14,53 @@ import { TopologyData } from '../../shared/models/network.models';
   imports: [CommonModule],
   template: `
     <div class="flex flex-col h-full">
-      <div class="flex items-center justify-between px-4 py-3 border-b border-wa-light-border dark:border-wa-dark-border bg-wa-light-surface dark:bg-wa-dark-surface">
-        <h2 class="text-base font-semibold text-wa-light-text dark:text-wa-dark-text">Topología de Red</h2>
-        <div class="flex gap-2">
+      <!-- Toolbar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 md:px-4 py-2 md:py-3 border-b border-wa-light-border dark:border-wa-dark-border bg-wa-light-surface dark:bg-wa-dark-surface">
+        <h2 class="text-sm md:text-base font-semibold text-wa-light-text dark:text-wa-dark-text">Topología de Red</h2>
+        <div class="flex gap-1.5 md:gap-2">
           <button (click)="refreshTopology()"
-            class="px-3 py-1.5 rounded-lg text-sm font-medium bg-wa-light-bg dark:bg-wa-dark-border text-wa-light-text dark:text-wa-dark-text border border-wa-light-border dark:border-wa-dark-border hover:bg-wa-light-border dark:hover:bg-wa-dark-panel transition-colors">
+            class="px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-medium bg-wa-light-bg dark:bg-wa-dark-border text-wa-light-text dark:text-wa-dark-text border border-wa-light-border dark:border-wa-dark-border hover:bg-wa-light-border dark:hover:bg-wa-dark-panel transition-colors">
             Actualizar
           </button>
           <button (click)="runRCA()" [disabled]="rcaLoading()"
-            class="px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            {{ rcaLoading() ? 'Analizando...' : 'Análisis de Causa Raíz' }}
+            class="px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ rcaLoading() ? 'Analizando...' : 'Causa Raíz' }}
           </button>
           <button (click)="fitGraph()"
-            class="px-3 py-1.5 rounded-lg text-sm font-medium bg-wa-light-bg dark:bg-wa-dark-border text-wa-light-text dark:text-wa-dark-text border border-wa-light-border dark:border-wa-dark-border hover:bg-wa-light-border dark:hover:bg-wa-dark-panel transition-colors">
+            class="px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-medium bg-wa-light-bg dark:bg-wa-dark-border text-wa-light-text dark:text-wa-dark-text border border-wa-light-border dark:border-wa-dark-border hover:bg-wa-light-border dark:hover:bg-wa-dark-panel transition-colors">
             Ajustar
           </button>
         </div>
       </div>
 
+      <!-- RCA Results -->
       @if (rcaResults().length > 0) {
-        <div class="mx-4 mt-3 rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-4">
-          <h3 class="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-2">Resultados del Análisis de Causa Raíz</h3>
+        <div class="mx-3 md:mx-4 mt-2 md:mt-3 rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-3 md:p-4">
+          <h3 class="text-xs md:text-sm font-semibold text-amber-700 dark:text-amber-400 mb-2">Causa Raíz Identificada</h3>
           @for (result of rcaResults(); track result.root_cause_device_id) {
-            <div class="flex items-start gap-3 mb-2 last:mb-0 bg-wa-light-surface dark:bg-wa-dark-surface rounded-lg p-3 border border-wa-light-border dark:border-wa-dark-border">
+            <div class="flex items-start gap-2 md:gap-3 mb-2 last:mb-0 bg-wa-light-surface dark:bg-wa-dark-surface rounded-lg p-2 md:p-3 border border-wa-light-border dark:border-wa-dark-border">
               <span class="shrink-0 px-2 py-0.5 rounded text-xs font-bold bg-amber-200 dark:bg-amber-500/30 text-amber-800 dark:text-amber-300">
                 {{ (result.confidence * 100).toFixed(0) }}%
               </span>
               <div class="min-w-0">
-                <p class="text-sm font-semibold text-wa-light-text dark:text-wa-dark-text">{{ result.root_cause_hostname }}</p>
-                <p class="text-xs text-wa-light-muted dark:text-wa-dark-muted mt-0.5">{{ result.reasoning }}</p>
-                <p class="text-xs text-red-500 dark:text-red-400 mt-1 font-medium">{{ result.affected_device_ids.length }} dispositivos afectados</p>
+                <p class="text-xs md:text-sm font-semibold text-wa-light-text dark:text-wa-dark-text">{{ result.root_cause_hostname }}</p>
+                <p class="text-[11px] md:text-xs text-wa-light-muted dark:text-wa-dark-muted mt-0.5 line-clamp-2">{{ result.reasoning }}</p>
+                <p class="text-[11px] md:text-xs text-red-500 dark:text-red-400 mt-1 font-medium">{{ result.affected_device_ids.length }} dispositivos afectados</p>
               </div>
             </div>
           }
         </div>
       }
 
-      <div class="flex-1 m-4 rounded-xl border border-wa-light-border dark:border-wa-dark-border bg-wa-light-surface dark:bg-wa-dark-surface overflow-hidden relative">
-        <div #cyContainer class="w-full h-full min-h-[500px]"></div>
+      <!-- Graph -->
+      <div class="flex-1 m-2 md:m-4 rounded-xl border border-wa-light-border dark:border-wa-dark-border bg-wa-light-surface dark:bg-wa-dark-surface overflow-hidden relative">
+        <div #cyContainer class="w-full h-full min-h-[350px] md:min-h-[500px]"></div>
 
+        <!-- Selected node panel -->
         @if (selectedNode()) {
-          <div class="absolute top-3 right-3 w-56 bg-wa-light-surface dark:bg-wa-dark-surface rounded-lg shadow-lg border border-wa-light-border dark:border-wa-dark-border p-3 z-10">
-            <h4 class="text-sm font-semibold text-wa-light-text dark:text-wa-dark-text mb-2">{{ selectedNode()!['label'] }}</h4>
-            <div class="space-y-1 text-xs">
+          <div class="absolute top-2 right-2 md:top-3 md:right-3 w-48 md:w-56 bg-wa-light-surface dark:bg-wa-dark-surface rounded-lg shadow-lg border border-wa-light-border dark:border-wa-dark-border p-2 md:p-3 z-10">
+            <h4 class="text-xs md:text-sm font-semibold text-wa-light-text dark:text-wa-dark-text mb-1.5">{{ selectedNode()!['label'] }}</h4>
+            <div class="space-y-0.5 md:space-y-1 text-[11px] md:text-xs">
               <div class="flex justify-between"><span class="text-wa-light-muted dark:text-wa-dark-muted">IP</span><span class="font-mono text-wa-light-text dark:text-wa-dark-text">{{ selectedNode()!['ip'] }}</span></div>
               <div class="flex justify-between"><span class="text-wa-light-muted dark:text-wa-dark-muted">Tipo</span><span class="text-wa-light-text dark:text-wa-dark-text">{{ selectedNode()!['type'] }}</span></div>
               <div class="flex justify-between"><span class="text-wa-light-muted dark:text-wa-dark-muted">Estado</span>
@@ -71,12 +75,13 @@ import { TopologyData } from '../../shared/models/network.models';
         }
       </div>
 
-      <div class="flex items-center gap-4 px-4 pb-3 text-xs text-wa-light-muted dark:text-wa-dark-muted">
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-status-up"></span> Activo</span>
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-status-down"></span> Caído</span>
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-status-degraded"></span> Degradado</span>
-        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-status-unknown"></span> Desconocido</span>
-        <span class="ml-4">◆ Router  ■ Switch  ▲ AP  ⬡ Firewall</span>
+      <!-- Legend -->
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 md:px-4 pb-2 md:pb-3 text-[11px] md:text-xs text-wa-light-muted dark:text-wa-dark-muted">
+        <span class="flex items-center gap-1"><span class="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-status-up"></span> Activo</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-status-down"></span> Caído</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-status-degraded"></span> Degradado</span>
+        <span class="flex items-center gap-1"><span class="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-status-unknown"></span> Desconocido</span>
+        <span class="basis-full sm:basis-auto sm:ml-2">◆ Router ■ Switch ▲ AP ⬡ Firewall</span>
       </div>
     </div>
   `,
