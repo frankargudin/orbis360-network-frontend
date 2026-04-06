@@ -88,6 +88,20 @@ export class ApiService {
     return this.http.get<Location[]>(`${API}/locations`);
   }
 
+  // ─── Thresholds ────────────────────────────────────────────────────────────
+
+  getDeviceThresholds(deviceId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${API}/thresholds/device/${deviceId}`);
+  }
+
+  saveThreshold(data: any): Observable<any> {
+    return this.http.post<any>(`${API}/thresholds`, data);
+  }
+
+  deleteThreshold(id: string): Observable<void> {
+    return this.http.delete<void>(`${API}/thresholds/${id}`);
+  }
+
   // ─── Topology ──────────────────────────────────────────────────────────────
 
   getTopology(): Observable<TopologyData> {

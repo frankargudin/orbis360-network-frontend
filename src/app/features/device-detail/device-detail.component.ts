@@ -103,6 +103,33 @@ Chart.register(...registerables);
           Sin datos de métricas para este período
         </div>
       }
+
+      <!-- Thresholds config -->
+      <div class="rounded-xl bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border p-3 md:p-4">
+        <h3 class="text-xs md:text-sm font-semibold text-wa-light-text dark:text-wa-dark-text mb-3">Umbrales de Alerta</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          @for (m of metricDefs; track m.key) {
+            <div class="flex items-center gap-2 p-2 rounded-lg bg-wa-light-bg dark:bg-wa-dark-border">
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-medium text-wa-light-text dark:text-wa-dark-text">{{ m.label }}</p>
+                <div class="flex gap-2 mt-1">
+                  <div class="flex-1">
+                    <label class="text-[10px] text-wa-light-muted dark:text-wa-dark-muted">Aviso</label>
+                    <input type="number" [value]="getThresholdValue(m.key, 'warning')" (change)="setThreshold(m.key, 'warning', $event)"
+                      class="w-full px-2 py-1 rounded text-xs bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border text-wa-light-text dark:text-wa-dark-text" placeholder="-" />
+                  </div>
+                  <div class="flex-1">
+                    <label class="text-[10px] text-wa-light-muted dark:text-wa-dark-muted">Crítico</label>
+                    <input type="number" [value]="getThresholdValue(m.key, 'critical')" (change)="setThreshold(m.key, 'critical', $event)"
+                      class="w-full px-2 py-1 rounded text-xs bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border text-wa-light-text dark:text-wa-dark-text" placeholder="-" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        <p class="text-[11px] text-wa-light-muted dark:text-wa-dark-muted mt-2">Se generará un incidente automáticamente cuando una métrica supere el umbral configurado.</p>
+      </div>
     </div>
   `,
 })
@@ -118,12 +145,20 @@ export class DeviceDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   device = signal<Device | null>(null);
   metrics = signal<Metric[]>([]);
   avgMetrics = signal<Record<string, unknown> | null>(null);
+  thresholds = signal<any[]>([]);
   loading = signal(false);
   selectedHours = signal(24);
 
   private charts: Chart[] = [];
   private pollInterval: any;
   private deviceId = '';
+
+  metricDefs = [
+    { key: 'latency_ms', label: 'Latencia (ms)' },
+    { key: 'packet_loss_pct', label: 'Pérdida de paquetes (%)' },
+    { key: 'cpu_usage_pct', label: 'CPU (%)' },
+    { key: 'memory_usage_pct', label: 'Memoria (%)' },
+  ];
 
   periods = [
     { label: '1h', hours: 1 },
@@ -136,6 +171,7 @@ export class DeviceDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.deviceId = this.route.snapshot.params['id'];
     this.api.getDevice(this.deviceId).subscribe(d => this.device.set(d));
+    this.api.getDeviceThresholds(this.deviceId).subscribe(t => this.thresholds.set(t));
   }
 
   ngAfterViewInit(): void {
@@ -266,5 +302,30 @@ export class DeviceDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     if (hours <= 6) return d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
     if (hours <= 48) return d.toLocaleString('es', { day: '2-digit', hour: '2-digit', minute: '2-digit' });
     return d.toLocaleDateString('es', { month: 'short', day: '2-digit', hour: '2-digit' });
+  }
+
+  // ── Thresholds ──────────────────────────────────────────────────────────────
+
+  getThresholdValue(metricName: string, type: 'warning' | 'critical'): number | null {
+    const t = this.thresholds().find((th: any) => th.metric_name === metricName);
+    if (!t) return null;
+    return type === 'warning' ? t.warning_value : t.critical_value;
+  }
+
+  setThreshold(metricName: string, type: 'warning' | 'critical', event: Event): void {
+    const value = parseFloat((event.target as HTMLInputElement).value) || null;
+    const existing = this.thresholds().find((th: any) => th.metric_name === metricName);
+
+    const data = {
+      device_id: this.deviceId,
+      metric_name: metricName,
+      warning_value: type === 'warning' ? value : (existing?.warning_value ?? null),
+      critical_value: type === 'critical' ? value : (existing?.critical_value ?? null),
+      enabled: true,
+    };
+
+    this.api.saveThreshold(data).subscribe(() => {
+      this.api.getDeviceThresholds(this.deviceId).subscribe(t => this.thresholds.set(t));
+    });
   }
 }
