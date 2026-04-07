@@ -88,6 +88,12 @@ export class ApiService {
     return this.http.get<Location[]>(`${API}/locations`);
   }
 
+  // ─── Discovery ────────────────────────────────────────────────────────────
+
+  discoverNetwork(network: string, community = 'public'): Observable<any> {
+    return this.http.post<any>(`${API}/discovery`, { network, snmp_community: community });
+  }
+
   // ─── Maintenance ──────────────────────────────────────────────────────────
 
   getMaintenanceWindows(deviceId?: string): Observable<any[]> {

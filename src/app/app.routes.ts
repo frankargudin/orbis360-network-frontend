@@ -48,6 +48,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/locations/locations.component').then((m) => m.LocationsComponent),
       },
+      {
+        path: 'discovery',
+        loadComponent: () =>
+          import('./features/discovery/discovery.component').then((m) => m.DiscoveryComponent),
+      },
     ],
   },
   { path: '**', redirectTo: '' },
