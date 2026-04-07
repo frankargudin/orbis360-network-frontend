@@ -104,6 +104,73 @@ Chart.register(...registerables);
         </div>
       }
 
+      <!-- Service Checks -->
+      <div class="rounded-xl bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border p-3 md:p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs md:text-sm font-semibold text-wa-light-text dark:text-wa-dark-text">Monitoreo de Servicios</h3>
+          <button (click)="showSvcForm.set(!showSvcForm())"
+            class="px-2 py-1 rounded text-xs font-medium bg-wa-teal text-white hover:bg-wa-teal-dark transition-colors">
+            {{ showSvcForm() ? 'Cancelar' : '+ Servicio' }}
+          </button>
+        </div>
+
+        @if (showSvcForm()) {
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3 p-3 rounded-lg bg-wa-light-bg dark:bg-wa-dark-border">
+            <div>
+              <label class="block text-[10px] text-wa-light-muted dark:text-wa-dark-muted mb-0.5">Nombre</label>
+              <input type="text" #svcName placeholder="Web principal"
+                class="w-full px-2 py-1.5 rounded text-xs bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border text-wa-light-text dark:text-wa-dark-text" />
+            </div>
+            <div>
+              <label class="block text-[10px] text-wa-light-muted dark:text-wa-dark-muted mb-0.5">Tipo</label>
+              <select #svcType class="w-full px-2 py-1.5 rounded text-xs bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border text-wa-light-text dark:text-wa-dark-text">
+                <option value="http">HTTP</option>
+                <option value="https">HTTPS</option>
+                <option value="tcp">TCP Port</option>
+                <option value="dns">DNS</option>
+                <option value="smtp">SMTP</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-wa-light-muted dark:text-wa-dark-muted mb-0.5">Destino (URL/host)</label>
+              <input type="text" #svcTarget placeholder="https://ejemplo.com"
+                class="w-full px-2 py-1.5 rounded text-xs bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border text-wa-light-text dark:text-wa-dark-text" />
+            </div>
+            <div class="flex items-end">
+              <button (click)="createService(svcName.value, svcType.value, svcTarget.value)"
+                class="w-full px-2 py-1.5 rounded text-xs font-medium bg-wa-teal text-white hover:bg-wa-teal-dark transition-colors">Guardar</button>
+            </div>
+          </div>
+        }
+
+        @if (serviceChecks().length > 0) {
+          <div class="space-y-2">
+            @for (svc of serviceChecks(); track svc.id) {
+              <div class="flex items-center justify-between p-2 rounded-lg bg-wa-light-bg dark:bg-wa-dark-border">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="w-2 h-2 rounded-full shrink-0"
+                    [class]="svc.status === 'ok' ? 'bg-status-up' : svc.status === 'critical' ? 'bg-status-down' : svc.status === 'warning' ? 'bg-status-degraded' : 'bg-status-unknown'"></span>
+                  <div class="min-w-0">
+                    <p class="text-xs font-medium text-wa-light-text dark:text-wa-dark-text truncate">{{ svc.name }} <span class="text-wa-light-muted dark:text-wa-dark-muted">({{ svc.check_type }})</span></p>
+                    <p class="text-[10px] text-wa-light-muted dark:text-wa-dark-muted truncate">{{ svc.target }} · {{ svc.last_response_ms ? svc.last_response_ms + 'ms' : '-' }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button (click)="runCheck(svc.id)" class="px-2 py-1 rounded text-[10px] font-medium bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border text-wa-light-text dark:text-wa-dark-text hover:bg-wa-light-border dark:hover:bg-wa-dark-panel transition-colors">
+                    Verificar
+                  </button>
+                  <button (click)="deleteService(svc.id)" class="p-1 rounded hover:bg-red-50 dark:hover:bg-red-500/10 text-wa-light-muted hover:text-red-500 transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (!showSvcForm()) {
+          <p class="text-[11px] text-wa-light-muted dark:text-wa-dark-muted">Sin servicios configurados. Agrega checks HTTP, DNS, SMTP o TCP para monitorear servicios individuales.</p>
+        }
+      </div>
+
       <!-- Thresholds config -->
       <div class="rounded-xl bg-wa-light-surface dark:bg-wa-dark-surface border border-wa-light-border dark:border-wa-dark-border p-3 md:p-4">
         <h3 class="text-xs md:text-sm font-semibold text-wa-light-text dark:text-wa-dark-text mb-3">Umbrales de Alerta</h3>
@@ -209,6 +276,8 @@ export class DeviceDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   metrics = signal<Metric[]>([]);
   avgMetrics = signal<Record<string, unknown> | null>(null);
   thresholds = signal<any[]>([]);
+  serviceChecks = signal<any[]>([]);
+  showSvcForm = signal(false);
   maintenanceWindows = signal<any[]>([]);
   showMaintForm = signal(false);
   loading = signal(false);
@@ -237,6 +306,7 @@ export class DeviceDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.deviceId = this.route.snapshot.params['id'];
     this.api.getDevice(this.deviceId).subscribe(d => this.device.set(d));
     this.api.getDeviceThresholds(this.deviceId).subscribe(t => this.thresholds.set(t));
+    this.loadServices();
     this.loadMaintenance();
   }
 
@@ -380,6 +450,26 @@ export class DeviceDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     const t = this.thresholds().find((th: any) => th.metric_name === metricName);
     if (!t) return null;
     return type === 'warning' ? t.warning_value : t.critical_value;
+  }
+
+  private loadServices(): void {
+    this.api.getDeviceServices(this.deviceId).subscribe(s => this.serviceChecks.set(s));
+  }
+
+  createService(name: string, type: string, target: string): void {
+    if (!name || !target) return;
+    this.api.createServiceCheck({ device_id: this.deviceId, name, check_type: type, target }).subscribe(() => {
+      this.showSvcForm.set(false);
+      this.loadServices();
+    });
+  }
+
+  deleteService(id: string): void {
+    this.api.deleteServiceCheck(id).subscribe(() => this.loadServices());
+  }
+
+  runCheck(id: string): void {
+    this.api.runServiceCheck(id).subscribe(() => this.loadServices());
   }
 
   createMaintenance(title: string, desc: string, start: string, end: string): void {

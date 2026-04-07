@@ -109,6 +109,7 @@ export class ShellComponent implements OnInit, OnDestroy {
     { path: '/links', label: 'Enlaces', exact: false },
     { path: '/locations', label: 'Ubicaciones', exact: false },
     { path: '/reports', label: 'Reportes', exact: false },
+    { path: '/audit', label: 'Auditoría', exact: false },
     { path: '/discovery', label: 'Descubrir', exact: false },
   ];
 

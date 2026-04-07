@@ -88,6 +88,30 @@ export class ApiService {
     return this.http.get<Location[]>(`${API}/locations`);
   }
 
+  // ─── Audit ────────────────────────────────────────────────────────────────
+
+  getAuditLog(limit = 50): Observable<any[]> {
+    return this.http.get<any[]>(`${API}/audit`, { params: new HttpParams().set('limit', limit) });
+  }
+
+  // ─── Services ─────────────────────────────────────────────────────────────
+
+  getDeviceServices(deviceId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${API}/services/device/${deviceId}`);
+  }
+
+  createServiceCheck(data: any): Observable<any> {
+    return this.http.post<any>(`${API}/services`, data);
+  }
+
+  deleteServiceCheck(id: string): Observable<void> {
+    return this.http.delete<void>(`${API}/services/${id}`);
+  }
+
+  runServiceCheck(id: string): Observable<any> {
+    return this.http.post<any>(`${API}/services/${id}/check`, {});
+  }
+
   // ─── Reports ──────────────────────────────────────────────────────────────
 
   getAvailabilityReport(hours = 720): Observable<any> {
