@@ -88,6 +88,12 @@ export class ApiService {
     return this.http.get<Location[]>(`${API}/locations`);
   }
 
+  // ─── Reports ──────────────────────────────────────────────────────────────
+
+  getAvailabilityReport(hours = 720): Observable<any> {
+    return this.http.get<any>(`${API}/reports/availability`, { params: new HttpParams().set('hours', hours) });
+  }
+
   // ─── Discovery ────────────────────────────────────────────────────────────
 
   discoverNetwork(network: string, community = 'public'): Observable<any> {
