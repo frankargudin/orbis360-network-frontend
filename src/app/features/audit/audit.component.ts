@@ -39,7 +39,7 @@ import { ApiService } from '../../core/services/api.service';
                   <td class="px-3 md:px-4 py-2 text-xs text-wa-light-text dark:text-wa-dark-text capitalize">{{ entry.entity_type }}</td>
                   <td class="px-3 md:px-4 py-2 text-xs font-medium text-wa-light-text dark:text-wa-dark-text hidden sm:table-cell">{{ entry.entity_name || '-' }}</td>
                   <td class="px-3 md:px-4 py-2 text-[11px] text-wa-light-muted dark:text-wa-dark-muted hidden md:table-cell truncate max-w-[200px]">{{ entry.details || '-' }}</td>
-                  <td class="px-3 md:px-4 py-2 text-[11px] text-wa-light-muted dark:text-wa-dark-muted font-mono hidden md:table-cell">{{ entry.user_id?.slice(0, 8) || '-' }}</td>
+                  <td class="px-3 md:px-4 py-2 text-[11px] text-wa-light-text dark:text-wa-dark-text font-medium hidden md:table-cell">{{ entry.user_id || '-' }}</td>
                 </tr>
               }
               @if (entries().length === 0) {

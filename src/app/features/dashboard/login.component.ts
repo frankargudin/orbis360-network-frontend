@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
@@ -54,6 +55,7 @@ import { ThemeService } from '../../core/services/theme.service';
 export class LoginComponent {
   private api = inject(ApiService);
   private router = inject(Router);
+  private authService = inject(AuthService);
   theme = inject(ThemeService);
 
   username = '';
@@ -67,6 +69,7 @@ export class LoginComponent {
     this.api.login(this.username, this.password).subscribe({
       next: (res) => {
         localStorage.setItem('orbis360_token', res.access_token);
+        this.authService.updateFromToken();
         this.router.navigate(['/']);
       },
       error: (err) => {

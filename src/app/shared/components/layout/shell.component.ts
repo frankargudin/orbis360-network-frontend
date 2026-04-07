@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { filter, map } from 'rxjs';
+import { AuthService } from '../../../core/services/auth.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ThemeService } from '../../../core/services/theme.service';
 import { WebSocketService } from '../../../core/services/websocket.service';
@@ -36,7 +37,10 @@ import { DeviceStatus } from '../../../shared/models/network.models';
 
       <div class="flex-1"></div>
 
-      <!-- Status + actions -->
+      <!-- User + Status -->
+      @if (auth.username()) {
+        <span class="hidden sm:inline text-xs text-white/70 font-medium">{{ auth.username() }}</span>
+      }
       <div class="flex items-center gap-1.5 text-xs text-white/60 shrink-0">
         <span class="w-2 h-2 rounded-full" [class]="wsService.connected() ? 'bg-green-400' : 'bg-red-400'"></span>
         <span class="hidden sm:inline">{{ wsService.connected() ? 'En vivo' : 'Desconectado' }}</span>
@@ -93,6 +97,7 @@ import { DeviceStatus } from '../../../shared/models/network.models';
 export class ShellComponent implements OnInit, OnDestroy {
   theme = inject(ThemeService);
   wsService = inject(WebSocketService);
+  auth = inject(AuthService);
   private store = inject(Store);
   private router = inject(Router);
   private location = inject(Location);
