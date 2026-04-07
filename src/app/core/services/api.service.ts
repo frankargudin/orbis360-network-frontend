@@ -88,6 +88,22 @@ export class ApiService {
     return this.http.get<Location[]>(`${API}/locations`);
   }
 
+  // ─── Maintenance ──────────────────────────────────────────────────────────
+
+  getMaintenanceWindows(deviceId?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (deviceId) params = params.set('device_id', deviceId);
+    return this.http.get<any[]>(`${API}/maintenance`, { params });
+  }
+
+  createMaintenance(data: any): Observable<any> {
+    return this.http.post<any>(`${API}/maintenance`, data);
+  }
+
+  deleteMaintenance(id: string): Observable<void> {
+    return this.http.delete<void>(`${API}/maintenance/${id}`);
+  }
+
   // ─── Thresholds ────────────────────────────────────────────────────────────
 
   getDeviceThresholds(deviceId: string): Observable<any[]> {
